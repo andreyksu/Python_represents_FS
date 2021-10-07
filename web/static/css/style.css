@@ -1,5 +1,4 @@
-html,
-body {
+html, body {
   display: block;
   height: 100%;
   width: 100%;
@@ -11,31 +10,101 @@ body {
 div.main.root-container {
   border: 2px solid;
   border-color: red;
-
   display: flex;
   align-items: stretch;
   flex-direction: row;
   flex-wrap: wrap;
   /*flex-flow: row wrap;*/
-
   height: 100%;
   max-height: 100%;
   margin: 0px;
   padding: 0px;
-
-  box-sizing: border-box;/*Необходимо для отображения без scroll - т.е. указанное значение height в % будет с учетом margin и padding*/
+  box-sizing: border-box;
+  /*Необходимо для отображения без scroll - т.е. указанное значение height в % будет с учетом margin и padding*/
 }
 
 div.tree-container {
   border: 2px solid;
   border-color: black;
-
   flex: 1 1 250px;
+  overflow: auto;  
 }
 
 div.view-container {
   border: 2px solid;
   border-color: green;
-
   flex: 9 1 350px;
+  overflow: hidden;
+}
+
+/*-------------------------------------------------------------*/
+
+/* Remove default bullets */
+
+ul, #myUL {
+  list-style-type: none;
+}
+
+/* Remove margins and padding from the parent ul */
+
+#myUL {
+  margin: 0;
+  padding: 0;
+}
+
+/* Style the caret/arrow */
+
+.caret {
+  cursor: pointer;
+  user-select: none;
+  /* Prevent text selection */
+}
+
+.caret:hover {
+  border:1px solid black;
+}
+
+/* Create the caret/arrow with a unicode, and style it */
+
+.caret::before {
+  content: "\25B6";
+  color: black;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+/* Rotate the caret/arrow icon when clicked on (using JavaScript) */
+
+.caret-down::before {
+  transform: rotate(90deg);
+}
+
+/* Hide the nested list */
+
+.nested {
+  display: none;
+}
+
+/* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
+
+.active {
+  display: block;
+}
+
+/*-------------------------------------------------------------*/
+
+#tree-container li.terminalElement {
+  cursor: pointer;
+}
+
+#tree-container li.terminalElement:hover {
+  border:1px solid blue;
+}
+
+/*-------------------------------------------------------------*/
+
+object {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
 }
