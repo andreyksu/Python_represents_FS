@@ -1,10 +1,20 @@
-'use strict';
-
-import React from 'react';
-import ReactDOM from 'react-dom';
-
+/* -----Import React----- */
+import * as React from 'react';
+/* -----Import Mui----- */
+import { TreeView, TreeItem } from '@mui/lab';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+/* -----Import Own----- */
 import { URL_FOR_APP_SERVER } from '../const_provider';
 
+const markerStringForFile = "file___";
+const markerStringForFolder = "dir___";
+
+let functionFromOuter;
+
+/**
+ * Компонент с состоянием. Основной компонент, что вызывается в index.js построении дерева.
+ */
 class TreeWorkerCl extends React.Component {
     constructor(props) {
         super(props);
@@ -15,16 +25,17 @@ class TreeWorkerCl extends React.Component {
         };
     }
 
-    //Согласно офф. сайту, этот метод выполняется после render(). Но при этом этот метод меняет состояние компонента, что вызывает перерисовку, т.е. снова вызывает render().
+    /**
+     * Согласно офф. сайту, этот метод выполняется после render().
+     * Но при этом этот метод меняет состояние компонента, что вызывает перерисовку, т.е. снова вызывает render().
+     * В этом методе вызываем получение дерева. При успешном получении меняем состояние статутса/маркера.
+    */
     componentDidMount() {
         fetch(URL_FOR_APP_SERVER + "/getBaseStructure/")
             .then(
                 (res) => {
                     if (!res.ok) {
-                        this.setState({
-                            'isLoaded': false,
-                        });
-                        return res.text().then((text) => {
+                        return res.text().then((text) => {//В then мы должны вернуть Promise. По этому берем у res then.
                             throw new Error("Response for GET the tree isn`t OK! See error ======= " + text);
                         });
                     }
@@ -32,115 +43,108 @@ class TreeWorkerCl extends React.Component {
                 })
             .then(
                 (result) => {
-                    //console.debug("---------------componentDidMount()-----It Is OK set the items-------------- " + JSON.stringify(result));
-                    //console.debug("---------------componentDidMount()-----It Is OK set the items-------------- " + this.state.isLoaded);
                     this.setState({
                         'isLoaded': true,
                         'items': result
                     });
-                    //console.debug("---------------componentDidMount()-----It Is OK set the items-------------- " + this.state.isLoaded);
                 },
                 (error) => {
                     this.setState({
-                        'isLoaded': false, //Вот здесь не понятно, что должно быть, в случае ошибки видимо нужно переводить в False, хотя где брал пример, там true. Но ведь по логике мы итак меняем поле error.
+                        'isLoaded': true, //Вот здесь не понятно, что должно быть, в случае ошибки видимо нужно переводить в False, хотя где брал пример, там true. Но ведь по логике мы итак меняем поле error.
                         'error': error
                     });
                 }
             )
     }
 
-    /*
-        shouldComponentUpdate() {
-            console.debug("---------------shouldComponentUpdate()---------------");//Внимание, переопределяет метод, и тем самым не отрабатывала отрисовка. Т.к. не было return true - соответственно ничего не РЕрендерилось.
-        }
-    
-        shouldDidUpdate() {
-            console.debug("---------------shouldDidUpdate()---------------");
-        }
-    
-        componentWillUnmount() {
-            console.debug("---------------componentWillUnmount()---------------");
-        }
-    */
-
     render() {
+        console.log("TreeWorkerCl ReRender");
         const { items, isLoaded, error } = this.state;
-        console.debug("---------------render()-----isLoaded ===== " + isLoaded);
         if (error) {
             return <div>Error: {error.message}</div>;
         } else if (!isLoaded) {
             return <div>The tree is loading ...</div>;
         } else {
+            /*
+                TODO: Возможно это не самое хорошее решение. Но я пробовал передавать через props - и инфа теряется при ПОВТОРНОМ вызове BuildTheTree.
+                При первом вызове все ок. Но видимо как-то внутри React вызывает при раскрытии дерева еще раз BuildTheTree и при этом не вызывается TreeWievComponent - через которы и передавалась информация.
+            */
+            functionFromOuter = this.props.functionForUpdateViewer;
             return (
-                <ul id='myUL'>
-                    <TreeBuilder JSONTree={items} />
-                </ul>
-
+                <TreeWievComponent JSONTree={items} />
             );
         }
     }
 }
 
-function TreeBuilder(props) {
+function TreeWievComponent(props) {
+    return (
+        <TreeView
+            onNodeSelect={forHandelSelect}
+            aria-label="file system navigator"
+            defaultCollapseIcon={<ExpandMoreIcon />}
+            defaultExpandIcon={<ChevronRightIcon />}
+        >
+            <BuildTheTree JSONTree={props.JSONTree} />
+        </TreeView>
+    );
+}
 
-    function forHandelClickOnFile(e) {// Слушатель для файла
-        let theCurrentElement = e.target;// Из event - получаем текущий элемент, на котором поймали event (т.е. на котором кликнули).        
-        let pathFromElement = theCurrentElement.getAttribute("data-path");// У элемента получаем путь из атрибута.
-        let pathForQuery = URL_FOR_APP_SERVER + "/getFile/" + pathFromElement;
-        console.debug('pathFromElement ===== ' + pathFromElement);
-        console.debug('pathForQuery ===== ' + pathForQuery);
-        let ViewElement = document.getElementById('view-container');// Удаляем все из формы представления, перед отображениме нового содержимого.
-        while (ViewElement.firstChild) {
-            console.debug('Удаляем дочерние элементы из контейнера = view-containe!!!!');
-            ViewElement.removeChild(ViewElement.firstChild);// Удаляем каждый раз первый элемент (когда-то их не останется)!
-        }
-        let objectElement = document.createElement('object');// Добавляем объект как объект. Он отображает содержимое из атрибута "data".
-        let textForShow = document.createTextNode("There will be present content of selected File!");
-        objectElement.setAttribute('data', pathForQuery);// Сетим путь до файла (если тип знает, то отобразит содержимое файла в ином слвчае отобразит текст см. "content").
-        objectElement.appendChild(textForShow);
-        ViewElement.appendChild(objectElement);
-    }
+/**
+ * Вспомогательная для рекурсивного выстраивания дерева!
+ * @param {*} props 
+ * @returns 
+ */
+function BuildTheTree(props) {
+    /*
+    Интересно, что на этам этапе теряется функция. Видимо повторный вызов идет уже без TreeWievComponent??? Так как в пером вызове все есть.
+    const funtionForUpdateViever = props.funtionForUpdViever;    
+    funtionForUpdateViever("BuildTheTree", "BuildTheTree"); 
+    console.warn(typeof funtionForUpdateViever);
+    */
 
-    function forHandelClickOnFolder(e) {// Слушатель для каталога
-        e.preventDefault();
-        console.log('You click on FOLDER - will work ---> forHandelClickOnFolder');
-        let theTarget = e.target;
-        //console.log(theTarget);
-        theTarget.parentElement.querySelector(".nested").classList.toggle("active");
-        theTarget.classList.toggle("caret-down");
-    }
-
-    let listForRender = props.JSONTree.map((element) => {//Здесь формируется List (который возвращается как Element. По сути это набор элементов как список).
-        if (element.type == 'd') { //Если директория, то добавляем один вид слушателя/эвента.
+    let lsitOfTreeItem = props.JSONTree.map((item) => {
+        if (item.type === 'd') {
             return (
-                <li key={element.key}>
-                    <span className='caret' onClick={forHandelClickOnFolder}>
-                        {element.name}
-                    </span>
-                    <ul className='nested'>
-                        <TreeBuilder JSONTree={element.children} />
-                    </ul>
-                </li>
+                <TreeItem nodeId={markerStringForFolder + item.path.toString()} label={item.name}>
+                    <BuildTheTree JSONTree={item.children} />
+                </TreeItem>
             );
-        } else if (element.type == 'f') {//Если файо, то добавляем другой вид слушателя/эвента.
-            return (
-                <li key={element.key} data-path={element.path} className='terminalElement' onClick={forHandelClickOnFile}>
-                    {element.name}
-                </li>
-            )
         } else {
-            return (//Сейчас пустой каталог отображается как то криво ((стрелка и имя каталога на разных строчках). Эта часть не помогает т.к. мы сюда и не заходим.... Нужно добавлять в Python какой-то информационный элемент в пустой каталог.
-                <li>The current dir is empty</li>
+            return (
+                <TreeItem nodeId={markerStringForFile + item.path.toString()} label={item.name} onClick={(e) => forHandelClick(item.path, item.mime, e)}>
+                </TreeItem>
             );
         }
     });
-    return listForRender;
+    return lsitOfTreeItem;
 }
 
+/*---------------------------------------------------------------------------------*/
 
-function WorkerWithViwer() {
-    //Планирую использовать как построитель представления.
-    return;
+/**
+ * Обработчик клика по элементу дерева. Сделал пока распозонвание через добавление маркера в nodeID. Да и вообще - не очень удачно.
+ * Слушатель для файла. Здесь this не используется - по этой причине bind - не применяется.
+ * Нужно обратить внимание, bind в офицальном примере исплоьзуется, для возможности менять состояние компонента/объекта, в котором этот метод объявлен.
+ */
+
+function forHandelSelect(event, nodeId) {
+    let theCurrentElement = event.target;// Из event - получаем текущий элемент, на котором поймали event (т.е. на котором кликнули).
+    const stringForRegexp = "^" + markerStringForFile;
+    let regExpr = new RegExp(stringForRegexp);
+    let indexOfRegexp = nodeId.search(regExpr);
+    if (indexOfRegexp !== -1) {
+        let resultStringForQuery = nodeId.replace(markerStringForFile, "");
+        //console.debug("nodeId ===== " + nodeId);
+        //console.debug("resultStringForQuery ===== " + resultStringForQuery);
+    } else {
+        //console.debug("-----It is Dir-----");
+    }
 }
 
+function forHandelClick(path, mime, event) {
+    functionFromOuter(path, mime);
+}
+
+/*---------------------------------------------------------------------------------*/
 export default TreeWorkerCl;
