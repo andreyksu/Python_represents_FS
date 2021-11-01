@@ -25,8 +25,8 @@ class RootComponent extends React.Component {
   }
 
   functionForExternal = (path, type) => {
-    console.log("index -> functionForExternal() -> path ===== " + path);
-    console.log("index -> functionForExternal() -> type ===== " + type);
+    console.log("path ===== " + path);
+    console.log("type ===== " + type);
     this.setState((state, props) => ({
       pathForFile: path,
       typeForFile: type

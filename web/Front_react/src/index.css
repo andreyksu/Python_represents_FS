@@ -7,6 +7,12 @@ html, body, #root-container {
   overflow: hidden;
 }
 
+/*
+div[class^="makeStyles-label"].MuiTreeItem-label{
+  font-size: 0.9rem;
+}
+*/
+
 div.main.root-container {
   border: 2px solid;
   border-color: red;
@@ -33,7 +39,7 @@ div.tree-container {
 div.view-container {
   border: 2px solid;
   border-color: green;
-  flex: 9 1 350px;
+  flex: 8 1 350px;
   overflow: hidden;
   height: 100%;
 }

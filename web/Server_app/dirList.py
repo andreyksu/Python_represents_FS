@@ -44,7 +44,7 @@ def getStatic(path):
 def getFile(name):
     startPathFromProp = readProp(PARAM_OF_MAIN_PATH)
     fullPathOfFile = os.path.join(startPathFromProp, name)
-    inferedMime = inferMineType(fullPathOfFile)
+    inferedMime = inferMimeType(fullPathOfFile)
 
     print("\t\tstartPathFromProp ===== {0}".format(str(startPathFromProp)))
     print("\t\tpathForMimeType ===== {0}".format(str(fullPathOfFile)))
@@ -56,7 +56,7 @@ def getFile(name):
     else:
         return send_from_directory(directory=startPathFromProp, path=name, max_age=0)
 
-def inferMineType(pathOfFileForGetMimeType):
+def inferMimeType(pathOfFileForGetMimeType):
     fileName = os.path.basename(pathOfFileForGetMimeType)	
     list_of_file_name = str(fileName).split('.')
     extensionOfFile=list_of_file_name[len(list_of_file_name)-1]
@@ -95,7 +95,7 @@ def print_content_of_dir(path, listOfElementsForFill):
                 'key': time.time(),
                 'name': str(element),
                 'path': relativePath,
-                'mime': inferMineType(absPath)
+                'mime': inferMimeType(absPath)
             }
             listOfElementsForFill.append(mapForInsert)
 
