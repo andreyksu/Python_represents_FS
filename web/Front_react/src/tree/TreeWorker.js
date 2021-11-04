@@ -1,155 +1,94 @@
 /* -----Import React----- */
 import * as React from 'react';
 /* -----Import Material----- */
-import { makeStyles, withStyles, createTheme } from "@material-ui/core/styles";
-import { ThemeProvider, useTheme, responsiveFontSizes } from '@mui/material/styles';
 /* -----Import Mui----- */
-import TreeView from "@material-ui/lab/TreeView";
-import TreeItem from "@material-ui/lab/TreeItem";
+/** 
+ * См. здесь.
+ * https://stackoverflow.com/questions/69506133/difference-between-mui-material-styles-and-mui-styles 
+ * 
+ * Material-UI V4: 
+ *      - @material-ui/core/styles
+ *      - @material-ui/styles
+ * 
+ *        @material-ui/lab/TreeView ----- Для такого импорта не работает sx. Но для них должно работать createTheme / ThemeProvider.
+ *        @mui/lab ----- Для такого импорта не работает makeStyles, withStyles.
+ *          
+ *          For old style see: 
+ *              https://blog.bitsrc.io/4-ways-to-override-material-ui-styles-43aee2348ded
+ *              https://blog.bitsrc.io/a-better-way-to-style-material-ui-80c7707ad525 
+ *              https://arth3rs0ng.medium.com/mui-styled-components-and-inspiration-cceab14bec96
+ * 
+ *  MUI component uses emotion, not JSS anymore in the new version. Рекамендуется перейти на новый вид.
+ * 
+ * Material-UI V5:
+ *      - @mui/material/styles ----- Doesn't have makeStyles/withStyles, has styled instead.
+ *              import { styled } from "@mui/material/styles"; - следует использовать именно такой вид стилизации.
+ * 
+ *      - @mui/styles ----- Legacy!!! В V5 пока есть но в V6 планируют выпилить). 
+ *              - Doesn't come with a default theme, need createTheme/ThemeProvider. Has makeStyles/withStyles. 
+ *              import { makeStyles } from '@mui/styles';
+ * 
+ *      Не стоит миксовать используемые либы. Нужно выбрать один вид либы и использовать его.
+ */
+
+import { createTheme, ThemeProvider, styled, responsiveFontSizes } from '@mui/material/styles';
+//import { styled } from '@mui/material/styles';
+import TreeView from '@mui/lab/TreeView';//Got from official docs.
+import TreeItem from '@mui/lab/TreeItem';//Got from official docs.
+//import TreeView from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 /* -----Import Own----- */
 import { URL_FOR_APP_SERVER } from '../const_provider';
+import { fontSize } from '@mui/system';
 
 /**
  * Метод, для обновления состояния у родителя.
  * Вообще не очень хорошо, что сейчас лежит в global. Нужно как-то перенести в классы/методы.
  */
 let functionFromOuter;
-
-const SomeContext = React.createContext({ val1: "_val1", val2: "_val2" });
-
-/**
- * Вообще все проблемы с изменением шрифта и цвета были похоже из за использования:
- * import { TreeView, TreeItem } from '@mui/lab'; (хз от куда я из взял, но на офф. сайте указаны эти "@material-ui/lab/TreeView")
- *
- * Перешел на:
- * import TreeView from "@material-ui/lab/TreeView";
- * import TreeItem from "@material-ui/lab/TreeItem";
- * И стали применяться новые стили.
- *
- * При этом, когда использовал import { TreeView, TreeItem } from '@mui/lab'; не помогало даже задание style внутри элемента (хотя у него самый вскоий вес 1000).
- */
-
-/**
- * Только это сработало. Удалось изменить размер шрифта. Цвет удалось поменять и через makeStyles но вот размер не удалвалось поменять (т.к. размер потом переопределяется).
- * 
- * По сути запись withStyles({...})(var1) - означает: метод withStyles принимает объект, и возвращает другую функцию, которая вызывается сразу же и в нее предеается var1.
- * Что-то аналогичное с вызовом ананимной функции.
- * 
- * Но нужно использовать этот импорт:
- * import MuiTreeItem from "@material-ui/lab/TreeItem";
- * Вместо:
- * import TreeItem from "@material-ui/lab/TreeItem";
- * 
- * Судя по коду далее (см. метод withStyles), мы просто переопределяем копонент, и этот переопределенный компонент уже будет использоваться, далее.
- *  
- */
+//------------------------------------------------------------
 /*
-const TreeItem = withStyles({
-    root: {
-        fontSize: '0.85rem',
-    },
-    group: {
-        fontSize: '0.85rem',
-    },
-    content: {
-        fontSize: '0.85rem',
-    },
-    expanded: {
-        fontSize: '0.85rem',
-    },
-    selected: {
-        fontSize: '0.85rem',
-    },
-    focused: {
-        fontSize: '0.85rem',
-    },
-    disabled: {
-        fontSize: '0.85rem',
-    },
-    iconContainer: {
-        fontSize: '0.85rem',
-    },
-    label: {
-        fontSize: '0.85rem',
-    }
-})(MuiTreeItem);
+const styles = {
+    backgroundColor: "grey",
+    fontSize: "0.987rem !important" //Работает и без !important. Добавил для "попробовать"!
+};
+
+const CustomTreeItem = styled(TreeItem)({ ...styles });
+
+And use CustomTreeItem insted TreeItem. Тоже рабочий вариант, нормально работает. Второй вариант использую для "попроовать".
 */
-
-/**
- * Это по стуи jss. Используем - метод, который принимает объект стилей и возвращает метод, который будем использовать далее. Этот метод возвращает генератор jss - классов.
- * 
- * Для:
- * import { TreeView, TreeItem } from '@mui/lab';
- * Менял только цвет, шрифт тоже менялся, но при этом он выше переопределялся. Но через код, даже через style - изменить не удалось.
- */
-const useStylesForErrorFolder = makeStyles({
-    label: {
-        fontSize: '0.9rem',
-        fontWeight: 400,
-        color: "#FF1A1A",
+//------------------------------------------------------------
+const themeForTree1 = createTheme({
+    components: {
+        MuiTreeItem: {
+            styleOverrides: {
+                root: {
+                    fontSize: "0.921rem",
+                },
+                label: {
+                    fontSize: "0.922rem",
+                },
+                content: {
+                    fontSize: "0.923rem",
+                },
+            },
+        },
     },
 });
 
-const useStylesForRegularFolder = makeStyles({
-    label: {
-        fontSize: '0.9rem',
-        fontWeight: 400,
-    },
-});
+const themeForTree = responsiveFontSizes(themeForTree1);
 
-const useStylesForFile = makeStyles({
-    label: {
-        fontSize: '0.9rem',
-        fontWeight: 350,
-        color: "#260099",
+const CustomTreeItem = styled(TreeItem)(({ theme }) => ({
+    '& .MuiTreeItem-content > .MuiTreeItem-label': {
+        fontSize: '0.924rem',
+        color: "#00008B",
         minWidth: 0,
         whiteSpace: 'nowrap',
-        textOverflow: 'ellipsis',
     },
-});
-//------------------------------------------------------------
-const theme = createTheme({
-    components: {
-        TreeItem: {
-            defaultProps: {
-                label: {
-                    fontSize: '0.7rem',
-                    color: "#FF1A1A",
-                },
-                root: {
-                    fontSize: '0.71rem',
-                    color: "#00FF00",
-                },
-                content: {
-                    fontSize: '0.72rem',
-                    color: "#ff00ff",
-                }
-            },
-            styleOverrides: {
-                label: {
-                    fontSize: '0.8rem',
-                    color: "#FF1A1A",
-                },
-                root: {
-                    fontSize: '0.81rem',
-                    color: "#00FF00",
-                },
-                content: {
-                    fontSize: '0.82rem',
-                    color: "#ff00ff",
-                }
-            },
-        },
-    },
-    typography: {
-        TreeItem: {
-            fontSize: '0.9rem',
-        },
-    },
-});
+}));
 
+//------------------------------------------------------------
 
 class TreeWorkerCl extends React.Component {
     constructor(props) {
@@ -198,46 +137,24 @@ class TreeWorkerCl extends React.Component {
         } else {
             functionFromOuter = this.props.functionForUpdateViewer;
             return (
-                <SomeContext.Provider value={{ val1: "_val11", val2: "_val22" }}>
-                    <TreeWievComponent JSONTree={items} />
-                </SomeContext.Provider>
+                <TreeWievComponent JSONTree={items} />
             );
         }
     }
 }
 
 class TreeWievComponent extends React.Component {
-    /*
-        Это пока не очень ясно, как работает. Присвоили какому-то полю contextType объект ReactContext - и дальше что, как оно дальше влияет на this.context?
-        Если эту строчку закомментировать, то console.log(this.context) - пустой объект а не переданное свойство;
-
-        Хотя можно сделать так: TreeWievComponent.contextType = SomeContext;
-
-        И это ведь не добавление слушителя, a просто присваивание, как это все работает?
-        В Java - для static полей - полиморфизм не действует (для методов, нужно посмотреть как для полей, что с перектытием).
-        В JS - для static поля и методы наследуются (Extends дает две ссылки):
-        Rabbit extends Animal создаёт две ссылки на прототип:
-            Функция Rabbit прототипно наследует от функции Animal.
-            Rabbit.prototype прототипно наследует от Animal.prototype.
-    */
-    static contextType = SomeContext;//Это и есть подписка? Судя доки именно эта запись и делает значение доступное в поле this.context. При изменении значения 
-
     constructor(props) {
         super(props);
     }
 
     render() {
-        console.log(this.context);//Поле контекст видимо наследуется от React.Component. И это поле как-то автоматически проставляется.
-        console.log(TreeWievComponent.contextType);
-        console.log(typeof TreeWievComponent.contextType);
         return (
             <TreeView
+                sx={{ fontSize: '0.925rem' }}
                 aria-label="file system navigator"
                 defaultCollapseIcon={<ExpandMoreIcon />}
-                defaultExpandIcon={<ChevronRightIcon />}
-                sx={{ height: 240, flexGrow: 1, maxWidth: 300, border: "1px solid red" }}
-
-            >
+                defaultExpandIcon={<ChevronRightIcon />}>
                 <BuildTheTree JSONTree={this.props.JSONTree} />
             </TreeView>
         );
@@ -245,18 +162,14 @@ class TreeWievComponent extends React.Component {
 }
 
 function BuildTheTree(props) {
-    const theme = useTheme();
-    //const classesFolderErr = useStylesForErrorFolder();
-    const classesRegFolder = useStylesForRegularFolder();
-    const classesFile = useStylesForFile();
-
 
     let lsitOfTreeItem = props.JSONTree.map((item) => {
         if (item.type === 'd') {
             return (
-                <ThemeProvider theme={theme}>
-                    <TreeItem
-                        classes={{ label: classesRegFolder.label }}
+                <ThemeProvider theme={themeForTree}>
+                    <TreeItem //Дефолтный элемент, на него просто распространяется ThemeProvider -> themeForTree
+                        sx={{ fontSize: '0.926rem' }}
+                        key={item.key.toString()}
                         nodeId={item.key.toString()}
                         label={item.name}>
                         <BuildTheTree JSONTree={item.children} />
@@ -265,14 +178,16 @@ function BuildTheTree(props) {
             );
         } else {
             return (
-                <ThemeProvider theme={theme}>
-                    <TreeItem
-                        classes={{ label: classesFile.label }}
+                <ThemeProvider theme={themeForTree}>
+                    <CustomTreeItem //Здесь же уже кастомный компонент. И настройки ThemeProvider -> themeForTree беребиваются кастомными настройками компонента.
+                        className="paaaaaaraaaaam"
+                        sx={{ fontSize: '0.927rem' }} //Влияет, но сверху переопределяется деволтной темой, так как тема выше задана через два класса css-селектора. Т.е. не подходит.
+                        key={item.key.toString()}
                         nodeId={item.key.toString()}
                         onClick={(e) => forHandelClick(item.path, item.mime, e)}
                         label={item.name} >
-                    </TreeItem>
-                </ThemeProvider >
+                    </CustomTreeItem>
+                </ThemeProvider>
             );
         }
     });

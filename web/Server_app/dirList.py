@@ -15,7 +15,7 @@ PATH_TO_CONF = 'conf/ConfigFile.properties'
 PATH_TO_STATIC = 'front_content/'#Path espetially for react app.
 PARAM_OF_MAIN_PATH = 'start.path'
 SUB_PATH=''
-LIST_OF_EXTENSIONS = ['log', 'java', 'txt', 'sh', 'list', 'conf', 'functions', 'py', 'rb', 'sql', 'properties', 'txt_tmp', 'info']
+LIST_OF_EXTENSIONS = ['log', 'java', 'txt', 'sh', 'list', 'conf', 'functions', 'py', 'rb', 'sql', 'properties', 'txt_tmp', 'info', 'js', 'json']
 # -----------------------------------------
 app = Flask(__name__, static_url_path='', static_folder=PATH_TO_STATIC)#Was changed for React APP. When placed with Flask
 CORS(app, origins=['http://localhost:3000', 'https://localhost'])#It is for test mode - when work with React app (at coding time)!
