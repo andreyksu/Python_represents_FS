@@ -1,4 +1,4 @@
-'use strict';
+//'use strict'; //Почему-то ругается в логах, просит убрать 'use strict'.
 
 /** Import React*/
 import React from 'react';
@@ -54,7 +54,7 @@ class RootComponent extends React.Component {
 
 const element = <RootComponent name="Sikuli-Test" />;
 
-/** Что вставляем, кудавставляем */
+/** Что вставляем, куда вставляем */
 ReactDOM.render(
   element,
   document.getElementById('root-container')

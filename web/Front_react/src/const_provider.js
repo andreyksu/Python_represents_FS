@@ -3,6 +3,6 @@
     *But this manner isn`t work when need work with ReactApp - as "npm start". In this case - was added this file. That get the url at runtime.
 */
 
-const URL_FOR_APP_SERVER = "http://192.168.226.136:8088";
+const URL_FOR_APP_SERVER = "http://192.168.216.21:8088";
 
 export { URL_FOR_APP_SERVER };

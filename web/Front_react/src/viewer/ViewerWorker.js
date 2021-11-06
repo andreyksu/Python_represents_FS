@@ -32,7 +32,7 @@ export default class ViewerVorkerCl extends React.Component {
     }
 
     getAppopriateMimeType(targetMime) {
-        if (targetMime !== null && targetMime !== 'null' && targetMime != 'null' && targetMime !== '') {
+        if (targetMime !== null && targetMime !== 'null' && targetMime !== 'null' && targetMime !== '') {
             let listOfType = ['png', 'jpeg', 'gif', 'bmp', 'pdf', 'csv', 'xslx', 'docx', 'mp4', 'webm']
             let resultOfDevide = targetMime.split('/');
             let resultOfDevidedTargetMime = resultOfDevide[1];
@@ -55,9 +55,9 @@ export default class ViewerVorkerCl extends React.Component {
         let typeForFile = this.props.typeForFile;
         let arrayOfVerifyMimeType = this.getAppopriateMimeType(typeForFile);
         if (!pathForFile) {
-            return (<div><a> Please Choose Doc of File!!! </a></div>);
+            return (<div><p> Please Choose Doc of File!!! </p></div>);
         } else if (arrayOfVerifyMimeType === null) {
-            return (<div><a> This extension of file does not maintenance for represents !!! </a></div>);
+            return (<div><p> This extension of file does not maintenance for represents !!! </p></div>);
         } else if (arrayOfVerifyMimeType[0]) {
             let resultPathForGet = URL_FOR_APP_SERVER + "/getFile/" + pathForFile;
             console.log(resultPathForGet);
